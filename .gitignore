@@ -1,0 +1,21 @@
+# Build output
+build/
+build*/
+twister-out*/
+
+# Editor / IDE
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled / binaries
+*.o
+*.obj
+*.elf
+*.hex
+*.bin
+*.map
