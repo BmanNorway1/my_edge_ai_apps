@@ -17,10 +17,10 @@
 #include <drivers/axon/nrf_axon_driver.h>
 #include <drivers/axon/nrf_axon_nn_infer.h>
 
-/* TODO: rename this include and the struct/macro references below (model_finger_digits_rgb,
+/* TODO: rename this include and the struct/macro references below (model_finger_digits_,
  * NRF_AXON_MODEL_*) once you have compiled your actual RGB model through
  * model_converter.py -> the Axon compiler. These names are placeholders. */
-#include "generated/nrf_axon_model_finger_digits_rgb_.h"  // your compiled RGB model
+#include "generated/nrf_axon_model_finger_digits_.h"  // your compiled RGB model
 
 #include "ble_nus.h"
 
@@ -302,7 +302,7 @@ static int capture_and_classify(const struct device *video,
     }
 
     // Calculate the score as a percentage based on the quantization parameters
-    float max_score = (((float)max_val - model_finger_digits_rgb.output_dequant_zp)/256) * 100;
+    float max_score = (((float)max_val - model_finger_digits.output_dequant_zp)/256) * 100;
     LOG_INF("Detected finger digit: %s (score %d)", finger_digit_labels[max_idx], (int)max_score);
 
     // Send predictions over BLE NUS
@@ -323,7 +323,7 @@ int main(void)
     int err;
     nrf_axon_result_e result;
 
-    const nrf_axon_nn_compiled_model_s *model = &model_finger_digits_rgb;
+    const nrf_axon_nn_compiled_model_s *model = &model_finger_digits;
     const nrf_axon_nn_compiled_model_input_s *model_inputs =
         nrf_axon_nn_model_1st_external_input(model);
 
