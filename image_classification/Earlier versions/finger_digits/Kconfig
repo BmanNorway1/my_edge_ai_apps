@@ -1,0 +1,18 @@
+#
+# Copyright (c) 2026 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Finger Digits Application"
+
+config ARDUCAM_MEGA
+	bool
+	select EXPERIMENTAL
+	default y
+	help
+	  [Experimental]
+
+endmenu
+
+source "Kconfig.zephyr"

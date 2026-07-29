@@ -19,3 +19,9 @@ Thumbs.db
 *.hex
 *.bin
 *.map
+
+# Vendored Edge Impulse SDK (large; regenerate from the EI export, keep model artifacts only)
+**/ei-model/edge-impulse-sdk/
+
+# Backup / cruft files
+*.bak
