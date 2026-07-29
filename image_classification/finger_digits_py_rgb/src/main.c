@@ -72,6 +72,8 @@ static int8_t output_buf[NUM_CLASSES];
  * from the camera, before the HWC -> CHW transpose into input_buf. */
 static uint8_t rgb_buf[MODEL_WIDTH * MODEL_HEIGHT * MODEL_CHANNELS];
 
+static int frame_count = 0;
+
 static const struct gpio_dt_spec led_capture = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static const struct gpio_dt_spec led_detection = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
 
@@ -83,26 +85,6 @@ static void capture_timer_expiry(struct k_timer *timer)
 {
     k_sem_give(&capture_sem);
 }
-
-/*================================PRINTING IMAGE================================*/
-static int frame_count = 0;
-static void debug_print_input_buf(void)
-{
-    /* Rough visualization of the R channel plane only (offset 0 in the
-     * planar CHW layout). '#' where the quantized value is above the input
-     * zero-point. Only a sanity check, not a full-color preview. */
-    for (size_t row = 0; row < MODEL_HEIGHT; row++) {
-        char line[MODEL_WIDTH + 1];
-        for (size_t col = 0; col < MODEL_WIDTH; col++) {
-            int8_t val = input_buf[row * MODEL_WIDTH + col];
-            line[col] = (val > 0) ? '#' : '.';
-        }
-        line[MODEL_WIDTH] = '\0';
-        LOG_INF("%s", line);
-    }
-}
-/*==============================================================================*/
-
 
 static inline int8_t quantize(const float value, const nrf_axon_nn_compiled_model_input_s *in)
 {
