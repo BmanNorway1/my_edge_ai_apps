@@ -42,20 +42,9 @@ python3 patch_ei_axon_export.py --project-root . --model-name <name> --dry-run
 
 Check the diff, then re-run without `--dry-run` to apply it.
 
-## Layout
+## Dataset
 
-```
-main_ei_rgb.c              Edge Impulse SDK, RGB model
-main_ei_greyscale.c        Edge Impulse SDK, greyscale model
-main_manual_rgb.c          manual Axon driver, RGB model
-main_manual_greyscale.c    manual Axon driver, greyscale model
-ble_nus.c / ble_nus.h      BLE NUS sender, used by the manual variants
-patch_ei_axon_export.py    patches known bugs in a fresh Edge Impulse export
-train.py                   trains the model (manual pipeline)
-keras_model.py             model architectures used by train.py
-model_converter.py         converts the trained model to int8 TFLite
-collect_dataset.py         builds the training set from device camera frames
-```
+The images used to train the models were some combination of the images found here: https://www.kaggle.com/datasets/bmannorway/fingers/data.
 
 ## Swapping in a new model
 
