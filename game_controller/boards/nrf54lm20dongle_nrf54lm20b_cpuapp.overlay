@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2026 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+&pinctrl {
+	pdm20_default_alt: pdm20_default_alt {
+		group1 {
+			psels = <NRF_PSEL(PDM_CLK, 1, 4)>,
+				<NRF_PSEL(PDM_DIN, 1, 5)>;
+		};
+	};
+
+	spi22_default_alt: spi22_default_alt {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 8)>,
+				<NRF_PSEL(SPIM_MOSI, 1, 9)>,
+				<NRF_PSEL(SPIM_MISO, 1, 6)>;
+		};
+	};
+
+	spi22_sleep_alt: spi22_sleep_alt {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 1, 8)>,
+				<NRF_PSEL(SPIM_MOSI, 1, 9)>,
+				<NRF_PSEL(SPIM_MISO, 1, 6)>;
+			low-power-enable;
+		};
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+/* DMIC (PDM microphone) for the KWS engine. Same wiring as ww_kws on the
+ * dongle: CLK on P1.04 (P2 edge pin 7), DIN on P1.05 (P2 edge pin 8).
+ */
+dmic_dev: &pdm20 {
+	status = "okay";
+	pinctrl-0 = <&pdm20_default_alt>;
+	pinctrl-names = "default";
+	clock-source = "PCLK32M";
+};
+
+/* BMI270 for the gesture engine. Declared only so the gesture sources compile
+ * (imu.c uses DEVICE_DT_GET_ONE(bosch_bmi270)). The sensor is not wired on the
+ * dongle, so the gesture engine's init fails at runtime. Instance 21 is I2C on
+ * the dongle, so SPI22 is used here with otherwise-unused pins.
+ */
+&spi22 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	pinctrl-0 = <&spi22_default_alt>;
+	pinctrl-1 = <&spi22_sleep_alt>;
+	pinctrl-names = "default", "sleep";
+	cs-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;
+
+	bmi270: spi-dev-bmi270@0 {
+		compatible = "bosch,bmi270";
+		status = "okay";
+		reg = <0>;
+		spi-max-frequency = <DT_FREQ_M(8)>;
+	};
+};
+
+&axon {
+	status = "okay";
+};

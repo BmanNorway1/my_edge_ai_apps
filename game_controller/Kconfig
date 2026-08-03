@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2026 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Game controller application"
+
+config KWS_ONLY
+	bool "Run KWS only (skip the gesture engine)"
+	default n
+	help
+	  Skip registering the gesture engine, so the app never touches the
+	  BMI270 IMU and boots the same whether or not it's wired up. Useful
+	  for KWS-only development: the IMU's only 5V source is the DK, so
+	  without this option it must be jumper-wired in for the app to boot
+	  at all (gesture engine init fails otherwise).
+
+config KWS_EMA_ALPHA
+	int "Exponential moving average coefficient for class probability"
+	range 0 1000
+	default 120
+	help
+	  Coefficient for new entries in exponential moving average calculation for average class
+	  probability. The value is expressed in units of 1/1000.
+
+endmenu
+
+source "Kconfig.zephyr"
