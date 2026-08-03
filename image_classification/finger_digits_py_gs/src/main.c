@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
@@ -29,6 +30,12 @@ LOG_MODULE_REGISTER(main);
 #define MODEL_HEIGHT 96
 
 #define NUM_CLASSES 7 //Finger digits 0-5 + unknown
+#define CLASS_UNKNOWN 6
+
+/* Consecutive identical predictions required before a digit is reported to the
+ * central. At one capture per 500 ms this is ~2.5 s of holding the same pose,
+ * which filters out the noisy frames while the hand is moving into place. */
+#define STABLE_PREDICTIONS_REQUIRED 5
 
 #define FRAME_RGB565_BYTES ((CAM_WIDTH) * (CAM_HEIGHT) * 2)
 
@@ -43,6 +50,19 @@ static const char * const finger_digit_labels[] = {
     "zero", "one", "two", "three", "four", "five", "unknown"
 };
 
+/* Wire tokens, in the same format game_controller uses for the snake commands:
+ * one short uppercase ASCII token per command, CRLF-terminated, so that
+ * game_receiver relays each one as a "Command: <token>" console line and the
+ * host-side parser needs no new framing. "unknown" is never sent, hence NULL. */
+static const char * const finger_digit_commands[] = {
+    "ZERO\r\n", "ONE\r\n", "TWO\r\n", "THREE\r\n", "FOUR\r\n", "FIVE\r\n", NULL
+};
+
+BUILD_ASSERT(ARRAY_SIZE(finger_digit_commands) == NUM_CLASSES,
+             "Mismatch between finger_digit_commands and NUM_CLASSES");
+BUILD_ASSERT(ARRAY_SIZE(finger_digit_labels) == NUM_CLASSES,
+             "Mismatch between finger_digit_labels and NUM_CLASSES");
+
 /* Single-channel (grayscale) model input, input_shape=(H, W, 1).
  * NOTE: the pixels fed here are continuous grayscale (0..255 domain), NOT
  * binarized. The model MUST be retrained on grayscale images produced by the
@@ -51,7 +71,13 @@ static int8_t input_buf[MODEL_WIDTH * MODEL_HEIGHT];
 static int8_t output_buf[NUM_CLASSES];
 static uint8_t gray_buf[MODEL_WIDTH * MODEL_HEIGHT];
 
-static int frame_count = 0;
+/* Prediction debounce state. A digit is reported once its run of identical
+ * predictions reaches STABLE_PREDICTIONS_REQUIRED, and not again until the
+ * prediction changes -- so holding one pose emits exactly one command, and
+ * showing the same digit twice means dropping the hand in between. */
+static int stable_idx = -1;
+static int stable_streak;
+static bool stable_reported;
 
 static const struct gpio_dt_spec led_capture = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static const struct gpio_dt_spec led_detection = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
@@ -180,6 +206,37 @@ static int capture_one_frame(const struct device *video)
     return 0;
 }
 
+/* Feed one prediction into the debounce filter and, when it settles on a digit,
+ * push the matching command to the central over NUS. */
+static void report_prediction(const int class_idx)
+{
+    if (class_idx != stable_idx) {
+        stable_idx = class_idx;
+        stable_streak = 1;
+        stable_reported = false;
+    } else if (stable_streak < STABLE_PREDICTIONS_REQUIRED) {
+        stable_streak++;
+    }
+
+    if (stable_reported || stable_streak < STABLE_PREDICTIONS_REQUIRED ||
+        class_idx == CLASS_UNKNOWN) {
+        return;
+    }
+
+    const char *cmd = finger_digit_commands[class_idx];
+    int err = ble_nus_send(cmd, (uint16_t)strlen(cmd));
+
+    if (err) {
+        /* Not connected yet, or the stack pushed back. Stay unlatched so the
+         * next frame of this same streak retries. */
+        LOG_WRN("NUS send failed (err %d)", err);
+        return;
+    }
+
+    stable_reported = true;
+    LOG_INF("Sent command: %s", finger_digit_labels[class_idx]);
+}
+
 static int capture_and_classify(const struct device *video,
                                 const nrf_axon_nn_compiled_model_s *model)
 {
@@ -240,15 +297,7 @@ static int capture_and_classify(const struct device *video,
     float max_score = (((float)max_val - model_finger_digits.output_dequant_zp)/256) * 100;
     LOG_INF("Detected finger digit: %s (score %d)", finger_digit_labels[max_idx], (int)max_score);
 
-    // Send predictions over BLE NUS
-    frame_count++;
-    if (frame_count % 2 == 0 && ble_nus_ready()) {
-        char line[16];
-        int n = snprintf(line, sizeof(line), "%s,%d\r\n", finger_digit_labels[max_idx], (int)max_score);
-        if (n > 0 && n < (int)sizeof(line)) {
-            ble_nus_send(line, n);
-        }
-    }
+    report_prediction(max_idx);
 
     return 0;
 }
