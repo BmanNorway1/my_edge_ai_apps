@@ -13,7 +13,7 @@ Application overview
 ********************
 
 The application samples single-channel 16 kHz audio from a PDM microphone and feeds it to nRF Edge AI models.
-The wakeword phrase used by the bundled model is "Okay Nordic".
+The wakeword phrase used by the bundled model is "Please".
 In wakeword detection stage, model output is postprocessed with a predictions history window.
 Parameters used for postprocessing are prediction probability threshold, predictions history length and number of predictions above threshold in predictions history.
 When a wakeword is detected, the application switches to keyword detection stage.
