@@ -1,0 +1,28 @@
+# West / Zephyr build output
+build/
+build*/
+twister-out/
+twister-out.*/
+
+# CMake / compiler artifacts
+*.o
+*.obj
+*.a
+*.elf
+*.hex
+*.bin
+*.map
+
+# Editor / OS cruft
+*.swp
+*~
+.DS_Store
+
+# Claude Code project settings (remove this line if you want to publish them)
+.claude/
+
+# Python virtual environments and caches (game tooling)
+.venv/
+venv/
+__pycache__/
+*.pyc
