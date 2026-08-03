@@ -70,17 +70,17 @@ collect_dataset.py         builds the training set from device camera frames
 
 **Manual driver variants:**
 
-1. Train with `train.py`, convert with `model_converter.py`, then compile
-   through the Axon compiler.
-2. Rename the `#include` and the model struct name (`model_finger_digits`)
+1. Train with `train.py`, convert with `model_converter.py` - found under training_scripts. (Requires: conda environment with Python 3.11. Then install: tensorflow==2.15.1, pillow, matplotlib, scikit-learn)
+2. Compile through the Axon compiler. (Requires a different conda environment) Follow: https://nrfconnectdocs.nordicsemi.com/addons/addon-edge-ai/2.0.0/setting_up/axon_setup.html#axon-setup-compiler
+3. Rename the `#include` and the model struct name (`model_finger_digits`)
    to match what the compiler generated. Both RGB and greyscale variants use
    this same struct name, since each is a separate build project with no
    naming collision between them.
-3. If the model changed significantly, recheck the LUT assumption in
+4. If the model changed significantly, recheck the LUT assumption in
    `init_lut()`: it assumes one shared scale/zero-point for the whole input
    tensor, which is normal for image inputs but worth confirming against the
    generated model header.
-4. There is no self-test in these variants. If something looks wrong, check
+5. There is no self-test in these variants. If something looks wrong, check
    the pixel conversion first, before assuming the model is broken.
 
 ## Keeping training and firmware in sync
