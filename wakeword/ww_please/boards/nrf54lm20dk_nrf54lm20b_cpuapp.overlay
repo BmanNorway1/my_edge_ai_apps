@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) 2026 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	chosen {
+		ncs,control-output-uart = &uart30;
+	};
+
+	aliases {
+        ww-out = &ww_pin;
+		my-button = &button_pin;
+    };
+	ww_output {
+		compatible = "gpio-leds"; // Reuse the gpio-leds compatible to ensure the system understands this is a GPIO output
+    	ww_pin: ww_pin {
+			gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>; 
+			label = "Wake word output";
+		};
+    };
+	button_input {
+		compatible = "gpio-keys"; // Reuse the gpio-keys compatible to ensure the system understands this is a GPIO input
+		button_pin: button_pin {
+			gpios = <&gpio1 26 GPIO_ACTIVE_LOW>; 
+			label = "My Button";
+		};
+	};
+};
+
+&uart30 {
+	status = "okay";
+};
+
+&pinctrl {
+	pdm20_default_alt: pdm20_default_alt {
+		group1 {
+			psels = <NRF_PSEL(PDM_CLK, 1, 4)>,
+				<NRF_PSEL(PDM_DIN, 1, 5)>;
+		};
+	};
+};
+
+&gpio1 {
+    status = "okay";
+};
+
+dmic_dev: &pdm20 {
+	status = "okay";
+	pinctrl-0 = <&pdm20_default_alt>;
+	pinctrl-names = "default";
+	clock-source = "PCLK32M";
+};
+
+&axon {
+	status = "okay";
+};

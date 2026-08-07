@@ -1,0 +1,6 @@
+[submodule "game_controller"]
+	path = game_controller
+	url = https://github.com/Aslakoi/game_controller
+[submodule "game_receiver"]
+	path = game_receiver
+	url = https://github.com/Aslakoi/game_receiver
