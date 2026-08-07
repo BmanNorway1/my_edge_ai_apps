@@ -1,1 +1,0 @@
-# This is directory for Nordic EdgeAI Lab solution generated files
