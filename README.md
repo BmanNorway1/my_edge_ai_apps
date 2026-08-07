@@ -11,7 +11,7 @@ Hand sign finger digit classification, comparing two training pipelines (Edge Im
 Wakeword spotting running on-device.
 
 **Game Controller / Game Receiver**
-A two-part demo turning an nRF54LM20 board into a game controller driven by on-device Edge AI. The controller runs keyword spotting (over the DMIC microphone) and gesture recognition (over the BMI270 IMU) to drive a PC-side game, coordinated by an engine controller. The receiver runs on a separate nRF54LM20 DK acting as a Bluetooth LE central, bridging the controller's commands from the wireless dongle to the PC over UART.
+These are currently submodules in this git repo, see git docs for info about how to download these if you clone this project. A two-part demo turning an nRF54LM20 board into a game controller driven by on-device Edge AI. The controller runs keyword spotting (over the DMIC microphone) and gesture recognition (over the BMI270 IMU) to drive a PC-side game, coordinated by an engine controller. The receiver runs on a separate nRF54LM20 DK acting as a Bluetooth LE central, bridging the controller's commands from the wireless dongle to the PC over UART.
 
 These two live in their own repositories, since each is a full out-of-tree application built against the sdk-edge-ai add-on:
 - [game_controller](https://github.com/aslakoi/game_controller): keyword spotting + gesture recognition, runs on the dongle
