@@ -14,6 +14,7 @@
 #define __BLE_NUS_H__
 
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
 #include <errno.h>
 
 #ifdef __cplusplus
@@ -28,8 +29,13 @@ int ble_nus_send(const void *data, uint16_t len);
 
 #else /* !CONFIG_BT -- BLE disabled, stub the interface out */
 
-static inline int init_ble_nus(void)
+/* Signatures must track the CONFIG_BT declarations above exactly: main.c is
+ * compiled against whichever branch is active, so a stub that drifts only breaks
+ * the build in the configuration nobody happens to be building.
+ */
+static inline int init_ble_nus(const struct gpio_dt_spec *led)
 {
+	ARG_UNUSED(led);
 	return 0;
 }
 
