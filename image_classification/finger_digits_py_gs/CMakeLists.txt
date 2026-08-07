@@ -14,8 +14,10 @@ list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 target_sources(app PRIVATE
   src/main.c
   src/drivers/arducam_mega.c
-  src/ble_nus.c
-
 )
+
+# Only built when Bluetooth is enabled in prj.conf; the ble_nus_*() calls in
+# main.c become no-op stubs otherwise (see src/ble_nus.h).
+target_sources_ifdef(CONFIG_BT app PRIVATE src/ble_nus.c)
 
 
