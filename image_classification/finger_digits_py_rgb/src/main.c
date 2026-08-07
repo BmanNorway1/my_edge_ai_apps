@@ -74,8 +74,7 @@ static uint8_t rgb_buf[MODEL_WIDTH * MODEL_HEIGHT * MODEL_CHANNELS];
 
 static int frame_count = 0;
 
-static const struct gpio_dt_spec led_capture = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
-static const struct gpio_dt_spec led_detection = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
+static const struct gpio_dt_spec led_connected = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
 static void capture_timer_expiry(struct k_timer *timer);
 static K_TIMER_DEFINE(capture_timer, capture_timer_expiry, NULL);
@@ -233,8 +232,6 @@ static int capture_and_classify(const struct device *video,
     int err;
     nrf_axon_result_e result;
 
-    (void)gpio_pin_toggle_dt(&led_capture);
-
     err = video_stream_start(video, VIDEO_BUF_TYPE_OUTPUT);
     if (err) {
         LOG_ERR("Failed to start stream (err %d)", err);
@@ -317,10 +314,7 @@ int main(void)
                                .height = CAM_HEIGHT,
                                .pitch = CAM_WIDTH * 2};
 
-    if (led_init(&led_capture) != 0) {
-        return -1;
-    }
-    if (led_init(&led_detection) != 0) {
+    if (led_init(&led_connected) != 0) {
         return -1;
     }
 
@@ -360,7 +354,7 @@ int main(void)
     init_quant_lut(model_inputs);
 
 
-    err = init_ble_nus();
+    err = init_ble_nus(&led_connected);
     if (err) {
         LOG_ERR("BLE init failed (err %d)", err);
         return -1;
